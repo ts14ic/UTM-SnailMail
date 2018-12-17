@@ -33,8 +33,7 @@ abstract class BaseRequest<T> extends Request<T> {
     }
 
     private String getMethodName() {
-        int method = getMethod();
-        switch (method) {
+        switch (getMethod()) {
             case Method.GET: {
                 return "GET";
             }
@@ -43,8 +42,32 @@ abstract class BaseRequest<T> extends Request<T> {
                 return "POST";
             }
 
+            case Method.PUT: {
+                return "PUT";
+            }
+
+            case Method.DELETE: {
+                return "DELETE";
+            }
+
+            case Method.HEAD: {
+                return "HEAD";
+            }
+
+            case Method.OPTIONS: {
+                return "OPTIONS";
+            }
+
+            case Method.TRACE: {
+                return "TRACE";
+            }
+
+            case Method.PATCH: {
+                return "PATCH";
+            }
+
             default: {
-                return "[" + method + "]";
+                return "";
             }
         }
     }
