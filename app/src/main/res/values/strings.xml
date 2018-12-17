@@ -5,8 +5,8 @@
     <string name="all__no">No</string>
 
     <string name="login__mailbox_id_hint">Enter your MailBox ID</string>
-    <string name="login__title">Snail Mail registration</string>
-    <string name="login__register">Register</string>
+    <string name="login__title">Snail Mail authorization</string>
+    <string name="login__enter">Enter</string>
     <string name="login__error__invalid_id">Invalid ID</string>
     <string name="login__error__empty_id">ID cannot be empty</string>
 
@@ -19,6 +19,6 @@
     <string name="inbox__title">Inbox</string>
     <string name="inbox__title_with_counter">Inbox (%s)</string>
     <string name="inbox__sure_dismiss">Are you sure you want to mark all mail as seen?</string>
-    <string name="inbox__inbox_id_s">Inbox No: %s</string>
+    <string name="inbox__inbox_id_s">Mailbox No: %s</string>
     <string name="inbox__unseen_s">Unseen mail count: %s</string>
 </resources>
