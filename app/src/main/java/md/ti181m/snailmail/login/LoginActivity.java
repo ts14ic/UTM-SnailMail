@@ -19,10 +19,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final int LAYOUT = R.layout.activity_login;
 
-    @BindView(R.id.id_text_input)
-    TextInputLayout idTextInput;
-    @BindView(R.id.id_edit_text)
-    TextInputEditText idEditText;
+    @BindView(R.id.id_text_input) TextInputLayout idTextInput;
+    @BindView(R.id.id_edit_text) TextInputEditText idEditText;
 
     public static Intent getStartIntent(Context context) {
         return new Intent(context, LoginActivity.class);
