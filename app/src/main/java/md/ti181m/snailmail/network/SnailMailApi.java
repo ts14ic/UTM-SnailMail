@@ -20,10 +20,10 @@ public class SnailMailApi extends BaseApi {
             Response.Listener<List<MailJson>> onSuccessListener,
             Response.ErrorListener onErrorListener
     ) {
-        enqueueGetListRequest(
+        enqueueGetRequest(
                 tag,
                 "history?id=" + mailboxId,
-                MailJson.class,
+                listParser(MailJson.class),
                 onSuccessListener,
                 onErrorListener
         );

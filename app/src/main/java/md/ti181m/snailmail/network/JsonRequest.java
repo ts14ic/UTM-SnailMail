@@ -3,36 +3,35 @@ package md.ti181m.snailmail.network;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
 class JsonRequest<T> extends BaseRequest<T> {
-    private final Class<T> responseClass;
+    private final Parser<T> parser;
 
     JsonRequest(
             Object tag,
             int method,
             String url,
-            Class<T> responseClass,
+            Parser<T> parser,
             Response.Listener<T> onSuccessListener,
             Response.ErrorListener onErrorListener
     ) {
         super(tag, method, url, onSuccessListener, onErrorListener);
-        this.responseClass = responseClass;
+        this.parser = parser;
     }
 
     @Override
     protected Response<T> parseNetworkResponse(NetworkResponse response) {
         try {
-            ObjectMapper mapper = new ObjectMapper()
-                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            String content = new String(response.data);
-            T result = mapper.readValue(content, responseClass);
+            T result = parser.parse(new String(response.data));
             return Response.success(result, /*cache*/null);
         } catch (IOException e) {
             return Response.error(new VolleyError(e));
         }
+    }
+
+    interface Parser<T> {
+        T parse(String json) throws IOException;
     }
 }
