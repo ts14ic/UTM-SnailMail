@@ -73,9 +73,11 @@ class BaseApi {
             Response.Listener<Void> onSuccessListener,
             Response.ErrorListener onErrorListener
     ) {
-        queue.add(new BodylessPostRequest(
+        queue.add(new JsonRequest<>(
                 tag,
+                Request.Method.POST,
                 baseUrl + url,
+                json -> null,
                 onSuccessListener,
                 onErrorListener
         ));
