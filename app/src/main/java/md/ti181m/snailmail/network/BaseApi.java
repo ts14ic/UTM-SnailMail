@@ -27,9 +27,10 @@ class BaseApi {
         queue.cancelAll(tag);
     }
 
-    public void cancelAllRequests() {
+    public void close() {
         RequestQueue.RequestFilter filter = request -> /*every request*/true;
         queue.cancelAll(filter);
+        queue.stop();
     }
 
     <T> void enqueueGetRequest(

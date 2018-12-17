@@ -214,7 +214,7 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity 
 
     @Override
     protected void onDestroy() {
-        api.cancelAllRequests();
+        api.close();
         dismissAllDialogs();
         super.onDestroy();
     }
