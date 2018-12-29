@@ -37,7 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     public void onRegisterButtonClicked() {
         updateIdInputErrors();
 
-        if (getIdValidation().isOk()) {
+        if (validateIdInput().isOk()) {
             String enteredId = idEditText.getText().toString();
             Prefs.get(this).setMailboxId(enteredId);
 
@@ -47,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void updateIdInputErrors() {
-        switch (getIdValidation()) {
+        switch (validateIdInput()) {
             case EMPTY: {
                 idTextInput.setError(getString(R.string.login__error__empty_id));
                 break;
@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private IdValidation getIdValidation() {
+    private IdValidation validateIdInput() {
         String enteredId = idEditText.getText().toString();
         if (enteredId.isEmpty()) {
             return IdValidation.EMPTY;
