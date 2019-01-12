@@ -1,6 +1,6 @@
 package md.ti181m.snailmail.inbox;
 
-class MailItem extends BaseItem {
+class MailItem implements BaseItem {
 
     private final Mail mail;
     private final Listener listener;
