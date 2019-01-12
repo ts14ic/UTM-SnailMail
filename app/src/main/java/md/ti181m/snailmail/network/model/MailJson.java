@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 
-import androidx.annotation.NonNull;
 import md.ti181m.snailmail.inbox.Mail;
 
 public class MailJson {
@@ -14,6 +13,8 @@ public class MailJson {
     private Date whenAdded;
     @JsonProperty("whenSeen")
     private Date whenSeen;
+    @JsonProperty("whenDeleted")
+    private Date whenDeleted;
 
     public Mail toMail() {
         return new Mail(
@@ -21,17 +22,20 @@ public class MailJson {
                 whenAdded.getTime(),
                 whenSeen != null
                         ? whenSeen.getTime()
+                        : null,
+                whenDeleted != null
+                        ? whenDeleted.getTime()
                         : null
         );
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "MailJson{" +
                 "id=" + id +
                 ", whenAdded=" + whenAdded +
                 ", whenSeen=" + whenSeen +
+                ", whenDeleted=" + whenDeleted +
                 '}';
     }
 }

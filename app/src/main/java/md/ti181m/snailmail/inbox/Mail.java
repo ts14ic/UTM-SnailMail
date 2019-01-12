@@ -6,13 +6,16 @@ public class Mail {
     private long id;
     private long whenReceived;
     private Long whenSeen;
+    private Long whenDeleted;
 
     public Mail(long id,
                 long whenReceived,
-                Long whenSeen) {
+                Long whenSeen,
+                Long whenDeleted) {
         this.id = id;
         this.whenReceived = whenReceived;
         this.whenSeen = whenSeen;
+        this.whenDeleted = whenDeleted;
     }
 
     long getId() {
@@ -25,6 +28,10 @@ public class Mail {
 
     boolean hasBeenSeen() {
         return whenSeen != null;
+    }
+
+    boolean hasBeenDeleted() {
+        return whenDeleted != null;
     }
 
     long getWhenSeen() {

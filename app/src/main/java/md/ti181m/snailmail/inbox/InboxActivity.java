@@ -180,6 +180,7 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
 
     private void displayInbox(List<Mail> mails) {
         List<MailItem> items = Stream.of(mails)
+                .filterNot(Mail::hasBeenDeleted)
                 .map(mail -> new MailItem(mail, this))
                 .toList();
 
