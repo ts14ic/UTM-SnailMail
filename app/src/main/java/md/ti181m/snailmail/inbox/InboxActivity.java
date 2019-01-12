@@ -32,7 +32,7 @@ import md.ti181m.snailmail.utils.Prefs;
 import md.ti181m.snailmail.utils.ToolbarActivity;
 import timber.log.Timber;
 
-public class InboxActivity extends AppCompatActivity implements ToolbarActivity {
+public class InboxActivity extends AppCompatActivity implements ToolbarActivity, MailItem.Listener {
 
     private static final int LAYOUT = R.layout.activity_inbox;
 
@@ -180,7 +180,7 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity 
 
     private void displayInbox(List<Mail> mails) {
         List<MailItem> items = Stream.of(mails)
-                .map(MailItem::new)
+                .map(mail -> new MailItem(mail, this))
                 .toList();
 
         mailAdapter.setItems(items);
@@ -206,6 +206,7 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity 
             unseenCounterTextView.setText(unseenText);
         }
     }
+
 
     @OnClick(R.id.toolbar_drawer_button)
     void onDrawerButtonClicked() {
@@ -245,6 +246,36 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity 
         api.markAllAsSeen(
                 this,
                 Prefs.get(this).getMailboxId(),
+                ok -> {
+                    Timber.d("Successfully marked all as seen");
+                    setProgressVisible(false);
+                    downloadInboxForDisplay();
+                },
+                error -> {
+                    Timber.w("Failed to reset history");
+                    setProgressVisible(false);
+                }
+        );
+    }
+
+    @Override
+    public void onDeleteMailClicked(Mail mail) {
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.inbox__delete_confirmation)
+                .setPositiveButton(R.string.all__yes, (dialog, which) -> {
+                    deleteMail(mail);
+                })
+                .setNegativeButton(R.string.all__no, (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .show();
+    }
+
+    private void deleteMail(Mail mail) {
+        setProgressVisible(true);
+        api.deleteMail(
+                this,
+                mail.getId(),
                 ok -> {
                     Timber.d("Successfully marked all as seen");
                     setProgressVisible(false);

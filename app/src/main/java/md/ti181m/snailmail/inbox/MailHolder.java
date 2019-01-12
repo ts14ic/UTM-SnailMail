@@ -19,6 +19,7 @@ class MailHolder extends BaseHolder {
     @BindView(R.id.icon_image_view) ImageView iconImageView;
     @BindView(R.id.when_received_text_view) TextView whenReceivedTextView;
     @BindView(R.id.when_dismissed_text_view) TextView whenDismissedTextView;
+    @BindView(R.id.icon_delete) ImageView deleteIcon;
 
     MailHolder(ViewGroup parent) {
         super(parent, LAYOUT);
@@ -43,6 +44,10 @@ class MailHolder extends BaseHolder {
         } else {
             whenDismissedTextView.setVisibility(View.GONE);
         }
+
+        deleteIcon.setOnClickListener(v -> {
+            item.onDeleteMailClicked();
+        });
     }
 
     private String formatDate(long date) {

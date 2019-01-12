@@ -42,4 +42,18 @@ public class SnailMailApi extends BaseApi {
                 onErrorListener
         );
     }
+
+    public void deleteMail(
+            Object tag,
+            long mailId,
+            Response.Listener<Void> successListener,
+            Response.ErrorListener errorListener
+    ) {
+        enqueueBodylessPostRequest(
+                tag,
+                "delete/" + mailId,
+                successListener,
+                errorListener
+        );
+    }
 }

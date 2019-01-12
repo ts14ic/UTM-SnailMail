@@ -21,6 +21,15 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_mail" />
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/icon_delete"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_delete" />
+
         <TextView
             android:id="@+id/when_received_text_view"
             android:layout_width="0dp"
@@ -32,7 +41,7 @@
             android:textColor="@color/black"
             android:textSize="24sp"
             app:layout_constraintBottom_toTopOf="@+id/when_dismissed_text_view"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/icon_delete"
             app:layout_constraintStart_toEndOf="@id/icon_image_view"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="HH:mm YYYY-MM-dd" />
@@ -48,7 +57,7 @@
             android:textColor="@color/gray"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/icon_delete"
             app:layout_constraintStart_toEndOf="@id/icon_image_view"
             tools:text="Dismissed at: HH:mm YYYY-MM-dd" />
     </androidx.constraintlayout.widget.ConstraintLayout>
