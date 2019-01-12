@@ -43,6 +43,7 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.drawer_view) NavigationView drawerView;
     private TextView unseenCounterTextView;
+    private TextView deletedPercentageTextView;
 
     private SnailMailApi api;
     private MailAdapter mailAdapter;
@@ -83,6 +84,7 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
         inboxIdTextView.setText(inboxIdText);
 
         unseenCounterTextView = drawerHeaderView.findViewById(R.id.inbox_unseen_text_view);
+        deletedPercentageTextView = drawerHeaderView.findViewById(R.id.inbox_deleted_percentage_text_view);
         updateUnreadCount(0);
     }
 
@@ -194,6 +196,21 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
                 .filterNot(Mail::hasBeenDeleted)
                 .count();
         updateUnreadCount(unseenCount);
+
+        double deletedPercentage = getDeletedMailsPercentage(mails);
+        updateDeletedPercentage(deletedPercentage);
+    }
+
+    private double getDeletedMailsPercentage(List<Mail> mails) {
+        int allCount = mails.size();
+        if (allCount == 0) {
+            return 0;
+        }
+
+        long deletedCount = Stream.of(mails)
+                .filter(Mail::hasBeenDeleted)
+                .count();
+        return 100.0 * deletedCount / allCount;
     }
 
     private void updateUnreadCount(long unseenCount) {
@@ -209,6 +226,12 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
         }
     }
 
+    private void updateDeletedPercentage(double percentage) {
+        if (deletedPercentageTextView != null) {
+            String deletedPercentageText = getString(R.string.inbox__deleted_percentage_d_pct, percentage);
+            deletedPercentageTextView.setText(deletedPercentageText);
+        }
+    }
 
     @OnClick(R.id.toolbar_drawer_button)
     void onDrawerButtonClicked() {

@@ -41,6 +41,14 @@
         android:textSize="20sp"
         tools:text="Unseen mail count: 3" />
 
+    <TextView
+        android:id="@+id/inbox_deleted_percentage_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:textSize="20sp"
+        tools:text="Deleted percentage: 0%" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
