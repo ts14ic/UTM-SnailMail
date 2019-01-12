@@ -191,6 +191,7 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
 
         long unseenCount = Stream.of(mails)
                 .filterNot(Mail::hasBeenSeen)
+                .filterNot(Mail::hasBeenDeleted)
                 .count();
         updateUnreadCount(unseenCount);
     }
