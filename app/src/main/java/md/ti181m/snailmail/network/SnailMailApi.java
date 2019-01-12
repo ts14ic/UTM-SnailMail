@@ -14,7 +14,7 @@ public class SnailMailApi extends BaseApi {
         super(context);
     }
 
-    public void getInbox(
+    public void getMail(
             Object tag,
             String mailboxId,
             Response.Listener<List<MailJson>> onSuccessListener,

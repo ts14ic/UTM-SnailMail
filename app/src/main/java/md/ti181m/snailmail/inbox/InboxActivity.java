@@ -25,14 +25,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import md.ti181m.snailmail.R;
-import md.ti181m.snailmail.network.SnailMailApi;
-import md.ti181m.snailmail.network.model.MailJson;
 import md.ti181m.snailmail.splash.SplashActivity;
-import md.ti181m.snailmail.utils.Prefs;
 import md.ti181m.snailmail.utils.ToolbarActivity;
-import timber.log.Timber;
 
-public class InboxActivity extends AppCompatActivity implements ToolbarActivity, MailItem.Listener {
+public class InboxActivity
+        extends AppCompatActivity
+        implements ToolbarActivity, MailItem.Listener, InboxView {
 
     private static final int LAYOUT = R.layout.activity_inbox;
 
@@ -44,203 +42,62 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
     @BindView(R.id.drawer_view) NavigationView drawerView;
     private TextView unseenCounterTextView;
     private TextView deletedPercentageTextView;
+    private TextView inboxIdTextView;
 
-    private SnailMailApi api;
     private MailAdapter mailAdapter;
     private List<Dialog> dialogs = new ArrayList<>();
+    private InboxPresenter presenter;
 
     public static Intent getStartIntent(Context context) {
         return new Intent(context, InboxActivity.class);
     }
 
+    // region lifecycle
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(LAYOUT);
         ButterKnife.bind(this);
 
-        setToolbarTitle(R.string.inbox__title);
-
-        api = new SnailMailApi(this);
+        presenter = new InboxPresenter(this);
+        presenter.setView(this);
 
         mailAdapter = new MailAdapter();
         mailRecyclerView.setAdapter(mailAdapter);
 
-        swipeRefreshLayout.setOnRefreshListener(this::downloadInboxForDisplay);
-
+        swipeRefreshLayout.setOnRefreshListener(presenter::onRefresh);
 
         drawerView.setNavigationItemSelectedListener(menuItem -> {
             if (menuItem.getItemId() == R.id.exit) {
-                onExitClicked();
+                presenter.onExitClicked();
                 return true;
             }
             return false;
         });
 
         View drawerHeaderView = drawerView.getHeaderView(0);
-
-        TextView inboxIdTextView = drawerHeaderView.findViewById(R.id.inbox_id_text_view);
-        String inboxIdText = getString(R.string.inbox__inbox_id_s, Prefs.get(this).getMailboxId());
-        inboxIdTextView.setText(inboxIdText);
-
+        inboxIdTextView = drawerHeaderView.findViewById(R.id.inbox_id_text_view);
         unseenCounterTextView = drawerHeaderView.findViewById(R.id.inbox_unseen_text_view);
         deletedPercentageTextView = drawerHeaderView.findViewById(R.id.inbox_deleted_percentage_text_view);
-        updateUnreadCount(0);
-    }
 
-    @Override
-    public void setToolbarTitle(@StringRes int titleRes, Object... fmtArgs) {
-        setToolbarTitle(getString(titleRes, fmtArgs));
-    }
-
-    @OnClick(R.id.toolbar_exit_button)
-    void onExitClicked() {
-        Prefs.get(this).removeMailboxId();
-
-        startActivity(SplashActivity.getStartIntent(this));
-        finish();
-    }
-
-    @Override
-    public void setToolbarTitle(String title) {
-        toolbarTitleTextView.setText(title);
+        presenter.onCreate();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        downloadInboxForDisplay();
+        presenter.onStart();
     }
 
-    private void downloadInboxForDisplay() {
-        setProgressVisible(true);
-        setLoadingPerspective();
-
-        api.getInbox(
-                this,
-                Prefs.get(this).getMailboxId(),
-                inbox -> {
-                    setProgressVisible(false);
-
-                    List<Mail> mails = Stream.of(inbox)
-                            .map(MailJson::toMail)
-                            .sorted((left, right) -> {
-                                // Descending date order
-                                return Long.compare(
-                                        right.getWhenReceived(),
-                                        left.getWhenReceived()
-                                );
-                            })
-                            .toList();
-
-                    setContentPerspective(mails);
-                },
-                error -> {
-                    Timber.w("Failed to download inbox");
-                    setProgressVisible(false);
-                    setErrorPerspective();
-                }
-        );
-    }
-
-    private void setLoadingPerspective() {
-        if (mailAdapter.getItemCount() == 0) {
-            contentDescriptionTextView.setText(R.string.inbox__loading);
-            setToolbarTitle(R.string.inbox__title);
-        }
-    }
-
-    private void setErrorPerspective() {
-        if (mailAdapter.getItemCount() == 0) {
-            contentDescriptionTextView.setText(R.string.inbox__failed_to_load);
-            setToolbarTitle(R.string.inbox__title);
-        }
-    }
-
-    private void setProgressVisible(boolean isVisible) {
-        if (isVisible) {
-            swipeRefreshLayout.setRefreshing(true);
-        } else {
-            swipeRefreshLayout.setRefreshing(false);
-        }
-    }
-
-    private void setContentPerspective(List<Mail> inbox) {
-        if (inbox.isEmpty()) {
-            setEmptyPerspective();
-        } else {
-            displayInbox(inbox);
-        }
-    }
-
-    private void setEmptyPerspective() {
-        contentDescriptionTextView.setVisibility(View.VISIBLE);
-        contentDescriptionTextView.setText(R.string.inbox__no_content);
-
-        setToolbarTitle(R.string.inbox__title);
-    }
-
-    private void displayInbox(List<Mail> mails) {
-        List<MailItem> items = Stream.of(mails)
-                .filterNot(Mail::hasBeenDeleted)
-                .map(mail -> new MailItem(mail, this))
-                .toList();
-
-        mailAdapter.setItems(items);
-        mailAdapter.notifyDataSetChanged();
-
-        contentDescriptionTextView.setVisibility(View.GONE);
-
-        long unseenCount = Stream.of(mails)
-                .filterNot(Mail::hasBeenSeen)
-                .filterNot(Mail::hasBeenDeleted)
-                .count();
-        updateUnreadCount(unseenCount);
-
-        double deletedPercentage = getDeletedMailsPercentage(mails);
-        updateDeletedPercentage(deletedPercentage);
-    }
-
-    private double getDeletedMailsPercentage(List<Mail> mails) {
-        int allCount = mails.size();
-        if (allCount == 0) {
-            return 0;
-        }
-
-        long deletedCount = Stream.of(mails)
-                .filter(Mail::hasBeenDeleted)
-                .count();
-        return 100.0 * deletedCount / allCount;
-    }
-
-    private void updateUnreadCount(long unseenCount) {
-        if (unseenCount == 0) {
-            setToolbarTitle(R.string.inbox__title);
-        } else {
-            setToolbarTitle(R.string.inbox__title_with_counter, unseenCount);
-        }
-
-        if (unseenCounterTextView != null) {
-            String unseenText = getString(R.string.inbox__unseen_s, String.valueOf(unseenCount));
-            unseenCounterTextView.setText(unseenText);
-        }
-    }
-
-    private void updateDeletedPercentage(double percentage) {
-        if (deletedPercentageTextView != null) {
-            String deletedPercentageText = getString(R.string.inbox__deleted_percentage_d_pct, percentage);
-            deletedPercentageTextView.setText(deletedPercentageText);
-        }
-    }
-
-    @OnClick(R.id.toolbar_drawer_button)
-    void onDrawerButtonClicked() {
-        drawerLayout.openDrawer(GravityCompat.START);
+    @Override
+    public void close() {
+        startActivity(SplashActivity.getStartIntent(this));
+        finish();
     }
 
     @Override
     protected void onDestroy() {
-        api.close();
+        presenter.close();
         dismissAllDialogs();
         super.onDestroy();
     }
@@ -250,14 +107,119 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
             dialog.dismiss();
         }
     }
+    // endregion
+
+    // region click listeners
+    @OnClick(R.id.toolbar_exit_button)
+    void onExitClicked() {
+        presenter.onExitClicked();
+    }
+
+    @OnClick(R.id.toolbar_drawer_button)
+    void onDrawerButtonClicked() {
+        drawerLayout.openDrawer(GravityCompat.START);
+    }
 
     @OnClick(R.id.mark_all_as_seen_button)
     void onMarkAllAsSeenClicked() {
+        presenter.onMarkAllSeenClicked();
+    }
+
+    @Override
+    public void onDeleteMailClicked(Mail mail) {
+        presenter.onMailDeleteClicked(mail);
+    }
+    // endregion
+
+    // region content
+    @Override
+    public void displayMailItems(List<Mail> inbox) {
+        List<MailItem> items = Stream.of(inbox)
+                .map(mail -> new MailItem(mail, this))
+                .toList();
+        mailAdapter.setItems(items);
+        mailAdapter.notifyDataSetChanged();
+
+        contentDescriptionTextView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void displayLoadingText() {
+        if (mailAdapter.getItemCount() == 0) {
+            contentDescriptionTextView.setText(R.string.inbox__loading);
+            setToolbarTitle(R.string.inbox__title);
+        }
+    }
+
+    @Override
+    public void displayErrorText() {
+        if (mailAdapter.getItemCount() == 0) {
+            contentDescriptionTextView.setText(R.string.inbox__failed_to_load);
+            setToolbarTitle(R.string.inbox__title);
+        }
+    }
+
+    @Override
+    public void displayEmptyText() {
+        contentDescriptionTextView.setVisibility(View.VISIBLE);
+        contentDescriptionTextView.setText(R.string.inbox__no_content);
+
+        setToolbarTitle(R.string.inbox__title);
+    }
+    // endregion
+
+    // region info
+    @Override
+    public void setProgressVisible(boolean isVisible) {
+        swipeRefreshLayout.setRefreshing(isVisible);
+    }
+
+    @Override
+    public void setToolbarTitle(String title) {
+        toolbarTitleTextView.setText(title);
+    }
+
+    @Override
+    public void setToolbarTitle(@StringRes int titleRes, Object... fmtArgs) {
+        setToolbarTitle(getString(titleRes, fmtArgs));
+    }
+
+    @Override
+    public void setMailboxNumber(String mailboxNumber) {
+        String inboxIdText = getString(R.string.inbox__inbox_id_s, presenter.getMailboxId());
+        inboxIdTextView.setText(inboxIdText);
+    }
+
+    @Override
+    public void updateUnseenCount(long count) {
+        if (count == 0) {
+            setToolbarTitle(R.string.inbox__title);
+        } else {
+            setToolbarTitle(R.string.inbox__title_with_counter, count);
+        }
+
+        if (unseenCounterTextView != null) {
+            String unseenText = getString(R.string.inbox__unseen_s, String.valueOf(count));
+            unseenCounterTextView.setText(unseenText);
+        }
+    }
+
+    @Override
+    public void updateDeletedPercentage(double percentage) {
+        if (deletedPercentageTextView != null) {
+            String deletedPercentageText = getString(R.string.inbox__deleted_percentage_d_pct, percentage);
+            deletedPercentageTextView.setText(deletedPercentageText);
+        }
+    }
+    // endregion
+
+    // region dialogs
+    @Override
+    public void askMarkAsSeenConfirmation() {
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setMessage(R.string.inbox__sure_dismiss)
                 .setPositiveButton(R.string.all__yes, (dialog, which) -> {
-                    markAllAsSeen();
-                    dialog.dismiss();
+                    presenter.onMarkAllSeenConfirmed();
                 })
                 .setNegativeButton(R.string.all__no, (dialog, which) -> {
                     dialog.dismiss();
@@ -266,50 +228,18 @@ public class InboxActivity extends AppCompatActivity implements ToolbarActivity,
         dialogs.add(alertDialog);
     }
 
-    private void markAllAsSeen() {
-        setProgressVisible(true);
-        api.markAllAsSeen(
-                this,
-                Prefs.get(this).getMailboxId(),
-                ok -> {
-                    Timber.d("Successfully marked all as seen");
-                    setProgressVisible(false);
-                    downloadInboxForDisplay();
-                },
-                error -> {
-                    Timber.w("Failed to reset history");
-                    setProgressVisible(false);
-                }
-        );
-    }
-
     @Override
-    public void onDeleteMailClicked(Mail mail) {
-        new AlertDialog.Builder(this)
+    public void askMailDeletionConfirmation(Mail mail) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setMessage(R.string.inbox__delete_confirmation)
                 .setPositiveButton(R.string.all__yes, (dialog, which) -> {
-                    deleteMail(mail);
+                    presenter.onMailDeleteConfirmed(mail);
                 })
                 .setNegativeButton(R.string.all__no, (dialog, which) -> {
                     dialog.dismiss();
                 })
                 .show();
+        dialogs.add(alertDialog);
     }
-
-    private void deleteMail(Mail mail) {
-        setProgressVisible(true);
-        api.deleteMail(
-                this,
-                mail.getId(),
-                ok -> {
-                    Timber.d("Successfully marked all as seen");
-                    setProgressVisible(false);
-                    downloadInboxForDisplay();
-                },
-                error -> {
-                    Timber.w("Failed to reset history");
-                    setProgressVisible(false);
-                }
-        );
-    }
+    // endregion
 }
