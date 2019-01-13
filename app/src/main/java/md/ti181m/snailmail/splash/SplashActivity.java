@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import md.ti181m.snailmail.R;
 import md.ti181m.snailmail.inbox.InboxActivity;
 import md.ti181m.snailmail.login.LoginActivity;
-import md.ti181m.snailmail.utils.PrefsImpl;
 
 public class SplashActivity extends AppCompatActivity {
 

@@ -1,10 +1,24 @@
 package md.ti181m.snailmail.utils;
 
-public interface Prefs {
+import android.content.Context;
 
-    String getMailboxId();
+public class Prefs extends BasePrefs {
 
-    void setMailboxId(String mailboxId);
+    private static final String KEY_MAILBOX_ID = prefixKey("KEY_MAILBOX_ID");
 
-    void removeMailboxId();
+    Prefs(Context context) {
+        super(context);
+    }
+
+    public String getMailboxId() {
+        return preferences.getString(KEY_MAILBOX_ID, "");
+    }
+
+    public void setMailboxId(String mailboxId) {
+        commit(editor -> editor.putString(KEY_MAILBOX_ID, mailboxId));
+    }
+
+    public void removeMailboxId() {
+        remove(KEY_MAILBOX_ID);
+    }
 }

@@ -21,8 +21,8 @@ class BasePrefs {
         return BuildConfig.APPLICATION_ID + "." + key;
     }
 
-    public static PrefsImpl get(@NonNull Context context) {
-        return new PrefsImpl(context);
+    public static Prefs get(@NonNull Context context) {
+        return new Prefs(context);
     }
 
     void remove(String key) {

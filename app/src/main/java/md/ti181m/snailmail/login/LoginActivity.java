@@ -13,7 +13,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import md.ti181m.snailmail.R;
 import md.ti181m.snailmail.inbox.InboxActivity;
-import md.ti181m.snailmail.utils.PrefsImpl;
 
 public class LoginActivity extends AppCompatActivity {
 

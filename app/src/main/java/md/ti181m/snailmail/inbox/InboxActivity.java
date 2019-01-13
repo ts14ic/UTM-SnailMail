@@ -25,9 +25,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import md.ti181m.snailmail.R;
-import md.ti181m.snailmail.network.SnailMailApiImpl;
+import md.ti181m.snailmail.network.SnailMailApi;
 import md.ti181m.snailmail.splash.SplashActivity;
-import md.ti181m.snailmail.utils.PrefsImpl;
+import md.ti181m.snailmail.utils.Prefs;
 import md.ti181m.snailmail.utils.ToolbarActivity;
 
 public class InboxActivity
@@ -61,7 +61,7 @@ public class InboxActivity
         setContentView(LAYOUT);
         ButterKnife.bind(this);
 
-        presenter = new InboxPresenter(new SnailMailApiImpl(this), PrefsImpl.get(this));
+        presenter = new InboxPresenter(new SnailMailApi(this), Prefs.get(this));
         presenter.setView(this);
 
         mailAdapter = new MailAdapter();
