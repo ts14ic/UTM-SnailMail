@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import md.ti181m.snailmail.R;
 import md.ti181m.snailmail.inbox.InboxActivity;
 import md.ti181m.snailmail.login.LoginActivity;
+import md.ti181m.snailmail.utils.Prefs;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -28,7 +29,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private Intent getNextActivityIntent() {
-        if (PrefsImpl.get(this).getMailboxId().isEmpty()) {
+        if (Prefs.get(this).getMailboxId().isEmpty()) {
             return LoginActivity.getStartIntent(this);
         } else {
             return InboxActivity.getStartIntent(this);
