@@ -25,6 +25,9 @@ class InboxPresenter {
     }
 
     void onCreate() {
+        if (view == null) {
+            return;
+        }
         view.setMailboxNumber(prefs.getMailboxId());
         view.updateUnseenCount(0);
     }
@@ -100,6 +103,7 @@ class InboxPresenter {
                 .toList();
     }
 
+    // todo: test
     private long countUnseen(List<Mail> mails) {
         return Stream.of(mails)
                 .filterNot(Mail::hasBeenSeen)
@@ -107,6 +111,7 @@ class InboxPresenter {
                 .count();
     }
 
+    // todo: test
     private double getDeletedPercentage(List<Mail> mails) {
         int allCount = mails.size();
         if (allCount == 0) {
@@ -122,10 +127,6 @@ class InboxPresenter {
     void close() {
         view = null;
         api.close();
-    }
-
-    String getMailboxId() {
-        return prefs.getMailboxId();
     }
 
     void onExitClicked() {

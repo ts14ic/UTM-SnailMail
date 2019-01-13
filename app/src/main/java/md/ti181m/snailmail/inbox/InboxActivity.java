@@ -188,7 +188,7 @@ public class InboxActivity
 
     @Override
     public void setMailboxNumber(String mailboxNumber) {
-        String inboxIdText = getString(R.string.inbox__inbox_id_s, presenter.getMailboxId());
+        String inboxIdText = getString(R.string.inbox__inbox_id_s, mailboxNumber);
         inboxIdTextView.setText(inboxIdText);
     }
 
