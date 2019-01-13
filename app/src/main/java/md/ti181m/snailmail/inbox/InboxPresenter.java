@@ -1,7 +1,5 @@
 package md.ti181m.snailmail.inbox;
 
-import android.content.Context;
-
 import com.annimon.stream.Stream;
 
 import java.util.List;
@@ -17,9 +15,9 @@ class InboxPresenter {
     private Prefs prefs;
     private InboxView view;
 
-    InboxPresenter(Context context) {
-        this.api = new SnailMailApi(context);
-        this.prefs = Prefs.get(context);
+    InboxPresenter(SnailMailApi api, Prefs prefs) {
+        this.api = api;
+        this.prefs = prefs;
     }
 
     void setView(InboxView view) {

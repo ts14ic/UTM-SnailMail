@@ -13,7 +13,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import md.ti181m.snailmail.R;
 import md.ti181m.snailmail.inbox.InboxActivity;
-import md.ti181m.snailmail.utils.Prefs;
+import md.ti181m.snailmail.utils.PrefsImpl;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -39,7 +39,7 @@ public class LoginActivity extends AppCompatActivity {
 
         if (validateIdInput().isOk()) {
             String enteredId = idEditText.getText().toString();
-            Prefs.get(this).setMailboxId(enteredId);
+            PrefsImpl.get(this).setMailboxId(enteredId);
 
             startActivity(InboxActivity.getStartIntent(this));
             finish();
