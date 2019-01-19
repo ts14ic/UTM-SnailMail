@@ -6,10 +6,13 @@ import com.android.volley.Response;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import md.ti181m.snailmail.network.model.MailJson;
 
 public class SnailMailApi extends BaseApi {
 
+    @Inject
     public SnailMailApi(Context context) {
         super(context);
     }

@@ -13,6 +13,8 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
@@ -25,10 +27,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import md.ti181m.snailmail.R;
-import md.ti181m.snailmail.network.SnailMailApi;
 import md.ti181m.snailmail.splash.SplashActivity;
-import md.ti181m.snailmail.utils.Prefs;
 import md.ti181m.snailmail.utils.ToolbarActivity;
+import toothpick.Scope;
+import toothpick.Toothpick;
 
 public class InboxActivity
         extends AppCompatActivity
@@ -42,13 +44,15 @@ public class InboxActivity
     @BindView(R.id.content_description_text_view) TextView contentDescriptionTextView;
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.drawer_view) NavigationView drawerView;
+
+    @Inject InboxPresenter presenter;
+
     private TextView unseenCounterTextView;
     private TextView deletedPercentageTextView;
     private TextView inboxIdTextView;
 
     private MailAdapter mailAdapter;
     private List<Dialog> dialogs = new ArrayList<>();
-    private InboxPresenter presenter;
 
     public static Intent getStartIntent(Context context) {
         return new Intent(context, InboxActivity.class);
@@ -57,11 +61,13 @@ public class InboxActivity
     // region lifecycle
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        Scope scope = Toothpick.openScopes(getApplication());
         super.onCreate(savedInstanceState);
+        Toothpick.inject(this, scope);
+
         setContentView(LAYOUT);
         ButterKnife.bind(this);
 
-        presenter = new InboxPresenter(new SnailMailApi(this), Prefs.get(this));
         presenter.setView(this);
 
         mailAdapter = new MailAdapter();

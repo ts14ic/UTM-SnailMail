@@ -4,6 +4,8 @@ import com.annimon.stream.Stream;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import md.ti181m.snailmail.network.SnailMailApi;
 import md.ti181m.snailmail.network.model.MailJson;
 import md.ti181m.snailmail.utils.Prefs;
@@ -11,10 +13,12 @@ import timber.log.Timber;
 
 class InboxPresenter {
 
-    private SnailMailApi api;
-    private Prefs prefs;
+    @Inject SnailMailApi api;
+    @Inject Prefs prefs;
+
     private InboxView view;
 
+    @Inject
     InboxPresenter(SnailMailApi api, Prefs prefs) {
         this.api = api;
         this.prefs = prefs;
@@ -43,6 +47,7 @@ class InboxPresenter {
         view.setProgressVisible(true);
         view.displayLoadingText();
 
+        Timber.d("api = %s", api);
         api.getMail(
                 this,
                 prefs.getMailboxId(),
@@ -126,7 +131,7 @@ class InboxPresenter {
 
     void close() {
         view = null;
-        api.close();
+        api.cancelRequests(this);
     }
 
     void onExitClicked() {

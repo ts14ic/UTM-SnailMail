@@ -27,12 +27,6 @@ class BaseApi {
         queue.cancelAll(tag);
     }
 
-    public void close() {
-        RequestQueue.RequestFilter filter = request -> /*every request*/true;
-        queue.cancelAll(filter);
-        queue.stop();
-    }
-
     <T> void enqueueGetRequest(
             Object tag,
             String url,
