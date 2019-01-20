@@ -4,6 +4,8 @@ import com.annimon.stream.Stream;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import md.ti181m.snailmail.network.SnailMailApi;
 import md.ti181m.snailmail.network.model.MailJson;
 import md.ti181m.snailmail.utils.Prefs;

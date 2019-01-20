@@ -3,8 +3,6 @@ package md.ti181m.snailmail;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.multidex.MultiDexApplication;
 import md.ti181m.snailmail.di.ApplicationModule;
-import md.ti181m.snailmail.di.NetworkModule;
-import md.ti181m.snailmail.di.PrefsModule;
 import timber.log.Timber;
 import toothpick.Scope;
 import toothpick.Toothpick;
@@ -15,11 +13,7 @@ public class SnailMailApplication extends MultiDexApplication {
         super.onCreate();
 
         Scope scope = Toothpick.openScope(this);
-        scope.installModules(
-                new ApplicationModule(this),
-                new NetworkModule(this),
-                new PrefsModule(this)
-        );
+        scope.installModules(new ApplicationModule(this));
 
         configureLogging();
         enableVectorSupportOnPreLollipop();
