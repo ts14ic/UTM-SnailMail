@@ -27,10 +27,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import md.ti181m.snailmail.R;
+import md.ti181m.snailmail.di.Dependencies;
 import md.ti181m.snailmail.splash.SplashActivity;
 import md.ti181m.snailmail.utils.ToolbarActivity;
-import toothpick.Scope;
-import toothpick.Toothpick;
 
 public class InboxActivity
         extends AppCompatActivity
@@ -61,9 +60,8 @@ public class InboxActivity
     // region lifecycle
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        Scope scope = Toothpick.openScopes(getApplication());
+        Dependencies.inject(this);
         super.onCreate(savedInstanceState);
-        Toothpick.inject(this, scope);
 
         setContentView(LAYOUT);
         ButterKnife.bind(this);
