@@ -47,7 +47,6 @@ class InboxPresenter {
         view.setProgressVisible(true);
         view.displayLoadingText();
 
-        Timber.d("api = %s", api);
         api.getMail(
                 this,
                 prefs.getMailboxId(),
