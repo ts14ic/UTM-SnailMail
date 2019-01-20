@@ -56,7 +56,7 @@ class InboxPresenter {
                     }
                     view.setProgressVisible(false);
 
-                    List<Mail> mail = mapJsonToMail(response);
+                    List<Mail> mail = filterVisibleMail(mapJsonToMail(response));
                     if (mail.isEmpty()) {
                         view.displayEmptyText();
                     } else {
