@@ -47,7 +47,11 @@ public class InboxTest {
 
         inbox.downloadMailForDisplay();
 
-        verify(api).getMail(/*tag*/any(), eq("53"), any(), any());
+        assertThatGetMailCalledWithId("53");
+    }
+
+    private void assertThatGetMailCalledWithId(String id) {
+        verify(api).getMail(/*tag*/any(), eq(id), any(), any());
     }
 
     @Test
@@ -66,11 +70,15 @@ public class InboxTest {
 
     @Test
     public void testMarkAllAsSeen_usesMailboxNumberFromPrefs() {
-        when(prefs.getMailboxId()).thenReturn("53");
+        when(prefs.getMailboxId()).thenReturn("123");
 
         inbox.markAllAsSeen();
 
-        verify(api).markAllAsSeen(/*tag*/any(), eq("53"), any(), any());
+        assertThatMarkAsSeenCalledWithId("123");
+    }
+
+    private void assertThatMarkAsSeenCalledWithId(String id) {
+        verify(api).markAllAsSeen(/*tag*/any(), eq(id), any(), any());
     }
 
     @Test
@@ -86,7 +94,11 @@ public class InboxTest {
 
         inbox.deleteMail(someMail);
 
-        verify(api).deleteMail(/*tag*/any(), eq(34L), any(), any());
+        assertThatDeleteMailCalledWithId(34);
+    }
+
+    private void assertThatDeleteMailCalledWithId(long id) {
+        verify(api).deleteMail(/*tag*/any(), eq(id), any(), any());
     }
 
     private Mail someMailWithId(int id) {
