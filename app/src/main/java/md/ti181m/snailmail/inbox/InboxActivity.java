@@ -72,6 +72,16 @@ public class InboxActivity
         mailAdapter = new MailAdapter();
         mailRecyclerView.setAdapter(mailAdapter);
 
+        View drawerHeaderView = drawerView.getHeaderView(0);
+        inboxIdTextView = drawerHeaderView.findViewById(R.id.inbox_id_text_view);
+        unseenCounterTextView = drawerHeaderView.findViewById(R.id.inbox_unseen_text_view);
+        deletedPercentageTextView = drawerHeaderView.findViewById(R.id.inbox_deleted_percentage_text_view);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
         swipeRefreshLayout.setOnRefreshListener(inbox::downloadMailForDisplay);
 
         drawerView.setNavigationItemSelectedListener(menuItem -> {
@@ -82,29 +92,21 @@ public class InboxActivity
             return false;
         });
 
-        View drawerHeaderView = drawerView.getHeaderView(0);
-        inboxIdTextView = drawerHeaderView.findViewById(R.id.inbox_id_text_view);
-        unseenCounterTextView = drawerHeaderView.findViewById(R.id.inbox_unseen_text_view);
-        deletedPercentageTextView = drawerHeaderView.findViewById(R.id.inbox_deleted_percentage_text_view);
 
         inbox.registerObserver(this);
-        update();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
         inbox.downloadMailForDisplay();
     }
 
-    private void close() {
-        startActivity(SplashActivity.getStartIntent(this));
-        finish();
+    @Override
+    protected void onStop() {
+        swipeRefreshLayout.setOnRefreshListener(null);
+        drawerView.setNavigationItemSelectedListener(null);
+        inbox.unregisterObserver(this);
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        inbox.unregisterObserver(this);
         dismissAllDialogs();
         super.onDestroy();
     }
@@ -123,6 +125,11 @@ public class InboxActivity
         close();
     }
 
+    private void close() {
+        startActivity(SplashActivity.getStartIntent(this));
+        finish();
+    }
+
     @OnClick(R.id.toolbar_drawer_button)
     void onDrawerButtonClicked() {
         drawerLayout.openDrawer(GravityCompat.START);
@@ -139,6 +146,7 @@ public class InboxActivity
     }
     // endregion click listeners
 
+    // region content
     @Override
     public void update() {
         setMailboxNumber(inbox.getMailBoxNumber());
@@ -169,7 +177,6 @@ public class InboxActivity
         }
     }
 
-    // region content
     private void displayMailItems(List<Mail> inbox) {
         List<MailItem> items = Stream.of(inbox)
                 .map(mail -> new MailItem(mail, this))
