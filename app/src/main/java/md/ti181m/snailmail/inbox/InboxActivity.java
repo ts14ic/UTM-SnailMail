@@ -29,11 +29,14 @@ import butterknife.OnClick;
 import md.ti181m.snailmail.R;
 import md.ti181m.snailmail.di.Dependencies;
 import md.ti181m.snailmail.splash.SplashActivity;
+import md.ti181m.snailmail.utils.Prefs;
 import md.ti181m.snailmail.utils.ToolbarActivity;
 
 public class InboxActivity
         extends AppCompatActivity
-        implements ToolbarActivity, MailItem.Listener, InboxView {
+        implements ToolbarActivity,
+        MailItem.Listener,
+        Inbox.Observer {
 
     private static final int LAYOUT = R.layout.activity_inbox;
 
@@ -44,7 +47,8 @@ public class InboxActivity
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
     @BindView(R.id.drawer_view) NavigationView drawerView;
 
-    @Inject InboxPresenter presenter;
+    @Inject Prefs prefs;
+    @Inject Inbox inbox;
 
     private TextView unseenCounterTextView;
     private TextView deletedPercentageTextView;
@@ -62,20 +66,17 @@ public class InboxActivity
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         Dependencies.inject(this);
         super.onCreate(savedInstanceState);
-
         setContentView(LAYOUT);
         ButterKnife.bind(this);
-
-        presenter.setView(this);
 
         mailAdapter = new MailAdapter();
         mailRecyclerView.setAdapter(mailAdapter);
 
-        swipeRefreshLayout.setOnRefreshListener(presenter::onRefresh);
+        swipeRefreshLayout.setOnRefreshListener(inbox::downloadMailForDisplay);
 
         drawerView.setNavigationItemSelectedListener(menuItem -> {
             if (menuItem.getItemId() == R.id.exit) {
-                presenter.onExitClicked();
+                onExitClicked();
                 return true;
             }
             return false;
@@ -86,24 +87,24 @@ public class InboxActivity
         unseenCounterTextView = drawerHeaderView.findViewById(R.id.inbox_unseen_text_view);
         deletedPercentageTextView = drawerHeaderView.findViewById(R.id.inbox_deleted_percentage_text_view);
 
-        presenter.onCreate();
+        inbox.registerObserver(this);
+        update();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        presenter.onStart();
+        inbox.downloadMailForDisplay();
     }
 
-    @Override
-    public void close() {
+    private void close() {
         startActivity(SplashActivity.getStartIntent(this));
         finish();
     }
 
     @Override
     protected void onDestroy() {
-        presenter.close();
+        inbox.unregisterObserver(this);
         dismissAllDialogs();
         super.onDestroy();
     }
@@ -113,12 +114,13 @@ public class InboxActivity
             dialog.dismiss();
         }
     }
-    // endregion
+    // endregion lifecycle
 
     // region click listeners
     @OnClick(R.id.toolbar_exit_button)
     void onExitClicked() {
-        presenter.onExitClicked();
+        prefs.removeMailboxId();
+        close();
     }
 
     @OnClick(R.id.toolbar_drawer_button)
@@ -128,18 +130,47 @@ public class InboxActivity
 
     @OnClick(R.id.mark_all_as_seen_button)
     void onMarkAllAsSeenClicked() {
-        presenter.onMarkAllSeenClicked();
+        askMarkAsSeenConfirmation();
     }
 
     @Override
     public void onDeleteMailClicked(Mail mail) {
-        presenter.onMailDeleteClicked(mail);
+        askMailDeletionConfirmation(mail);
     }
-    // endregion
+    // endregion click listeners
+
+    @Override
+    public void update() {
+        setMailboxNumber(inbox.getMailBoxNumber());
+
+        updateUnseenCount(inbox.getUnseenCount());
+
+        updateDeletedPercentage(inbox.getDeletedPercentage());
+
+        updateProgressVisible(inbox.getProgress() == Inbox.Progress.VISIBLE);
+
+        updateContentVisible(inbox.getContent());
+    }
+
+    private void updateContentVisible(Inbox.Content content) {
+        switch (content) {
+            case EMPTY:
+                displayEmptyText();
+                break;
+            case LOADING:
+                displayLoadingText();
+                break;
+            case ERROR:
+                displayErrorText();
+                break;
+            case VISIBLE:
+                displayMailItems(inbox.getVisibleMail());
+                break;
+        }
+    }
 
     // region content
-    @Override
-    public void displayMailItems(List<Mail> inbox) {
+    private void displayMailItems(List<Mail> inbox) {
         List<MailItem> items = Stream.of(inbox)
                 .map(mail -> new MailItem(mail, this))
                 .toList();
@@ -149,34 +180,30 @@ public class InboxActivity
         contentDescriptionTextView.setVisibility(View.GONE);
     }
 
-    @Override
-    public void displayLoadingText() {
+    private void displayLoadingText() {
         if (mailAdapter.getItemCount() == 0) {
             contentDescriptionTextView.setText(R.string.inbox__loading);
             setToolbarTitle(R.string.inbox__title);
         }
     }
 
-    @Override
-    public void displayErrorText() {
+    private void displayErrorText() {
         if (mailAdapter.getItemCount() == 0) {
             contentDescriptionTextView.setText(R.string.inbox__failed_to_load);
             setToolbarTitle(R.string.inbox__title);
         }
     }
 
-    @Override
-    public void displayEmptyText() {
+    private void displayEmptyText() {
         contentDescriptionTextView.setVisibility(View.VISIBLE);
         contentDescriptionTextView.setText(R.string.inbox__no_content);
 
         setToolbarTitle(R.string.inbox__title);
     }
-    // endregion
+    // endregion content
 
     // region info
-    @Override
-    public void setProgressVisible(boolean isVisible) {
+    private void updateProgressVisible(boolean isVisible) {
         swipeRefreshLayout.setRefreshing(isVisible);
     }
 
@@ -190,14 +217,12 @@ public class InboxActivity
         setToolbarTitle(getString(titleRes, fmtArgs));
     }
 
-    @Override
-    public void setMailboxNumber(String mailboxNumber) {
+    private void setMailboxNumber(String mailboxNumber) {
         String inboxIdText = getString(R.string.inbox__inbox_id_s, mailboxNumber);
         inboxIdTextView.setText(inboxIdText);
     }
 
-    @Override
-    public void updateUnseenCount(long count) {
+    private void updateUnseenCount(long count) {
         if (count == 0) {
             setToolbarTitle(R.string.inbox__title);
         } else {
@@ -210,22 +235,20 @@ public class InboxActivity
         }
     }
 
-    @Override
-    public void updateDeletedPercentage(double percentage) {
+    private void updateDeletedPercentage(double percentage) {
         if (deletedPercentageTextView != null) {
             String deletedPercentageText = getString(R.string.inbox__deleted_percentage_d_pct, percentage);
             deletedPercentageTextView.setText(deletedPercentageText);
         }
     }
-    // endregion
+    // endregion info
 
     // region dialogs
-    @Override
-    public void askMarkAsSeenConfirmation() {
+    private void askMarkAsSeenConfirmation() {
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setMessage(R.string.inbox__sure_dismiss)
                 .setPositiveButton(R.string.all__yes, (dialog, which) -> {
-                    presenter.onMarkAllSeenConfirmed();
+                    inbox.markAllAsSeen();
                 })
                 .setNegativeButton(R.string.all__no, (dialog, which) -> {
                     dialog.dismiss();
@@ -234,12 +257,11 @@ public class InboxActivity
         dialogs.add(alertDialog);
     }
 
-    @Override
-    public void askMailDeletionConfirmation(Mail mail) {
+    private void askMailDeletionConfirmation(Mail mail) {
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setMessage(R.string.inbox__delete_confirmation)
                 .setPositiveButton(R.string.all__yes, (dialog, which) -> {
-                    presenter.onMailDeleteConfirmed(mail);
+                    inbox.deleteMail(mail);
                 })
                 .setNegativeButton(R.string.all__no, (dialog, which) -> {
                     dialog.dismiss();
@@ -247,5 +269,5 @@ public class InboxActivity
                 .show();
         dialogs.add(alertDialog);
     }
-    // endregion
+    // endregion dialogs
 }

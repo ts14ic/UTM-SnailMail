@@ -8,13 +8,13 @@ import md.ti181m.snailmail.inbox.Mail;
 
 public class MailJson {
     @JsonProperty("id")
-    private long id;
+    public long id;
     @JsonProperty("whenAdded")
-    private Date whenAdded;
+    public Date whenAdded;
     @JsonProperty("whenSeen")
-    private Date whenSeen;
+    public Date whenSeen;
     @JsonProperty("whenDeleted")
-    private Date whenDeleted;
+    public Date whenDeleted;
 
     public Mail toMail() {
         return new Mail(
