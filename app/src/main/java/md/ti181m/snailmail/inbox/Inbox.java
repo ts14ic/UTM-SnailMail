@@ -124,7 +124,6 @@ public class Inbox {
                 .toList();
     }
 
-    // todo: test
     private int countUnseen(List<Mail> mails) {
         return (int) Stream.of(mails)
                 .filterNot(Mail::hasBeenSeen)
@@ -132,7 +131,6 @@ public class Inbox {
                 .count();
     }
 
-    // todo: test
     private double getDeletedPercentage(List<Mail> mails) {
         int allCount = mails.size();
         if (allCount == 0) {
