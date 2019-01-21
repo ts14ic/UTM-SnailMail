@@ -151,16 +151,16 @@ public class InboxActivity
     public void update() {
         setMailboxNumber(inbox.getMailBoxNumber());
 
-        updateUnseenCount(inbox.getUnseenCount());
+        setUnseenCount(inbox.getUnseenCount());
 
-        updateDeletedPercentage(inbox.getDeletedPercentage());
+        setDeletedPercentage(inbox.getDeletedPercentage());
 
-        updateProgressVisible(inbox.getProgress() == Inbox.Progress.VISIBLE);
+        setProgressVisible(inbox.getProgress());
 
-        updateContentVisible(inbox.getContent());
+        setContentVisible(inbox.getContent());
     }
 
-    private void updateContentVisible(Inbox.Content content) {
+    private void setContentVisible(Inbox.Content content) {
         switch (content) {
             case EMPTY:
                 displayEmptyText();
@@ -210,8 +210,8 @@ public class InboxActivity
     // endregion content
 
     // region info
-    private void updateProgressVisible(boolean isVisible) {
-        swipeRefreshLayout.setRefreshing(isVisible);
+    private void setProgressVisible(Inbox.Progress progress) {
+        swipeRefreshLayout.setRefreshing(progress == Inbox.Progress.VISIBLE);
     }
 
     @Override
@@ -229,7 +229,7 @@ public class InboxActivity
         inboxIdTextView.setText(inboxIdText);
     }
 
-    private void updateUnseenCount(long count) {
+    private void setUnseenCount(long count) {
         if (count == 0) {
             setToolbarTitle(R.string.inbox__title);
         } else {
@@ -242,7 +242,7 @@ public class InboxActivity
         }
     }
 
-    private void updateDeletedPercentage(double percentage) {
+    private void setDeletedPercentage(double percentage) {
         if (deletedPercentageTextView != null) {
             String deletedPercentageText = getString(R.string.inbox__deleted_percentage_d_pct, percentage);
             deletedPercentageTextView.setText(deletedPercentageText);
