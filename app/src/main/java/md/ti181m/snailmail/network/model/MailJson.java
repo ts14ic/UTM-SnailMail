@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 
+import androidx.annotation.NonNull;
 import md.ti181m.snailmail.inbox.Mail;
 
 public class MailJson {
@@ -29,6 +30,7 @@ public class MailJson {
         );
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "MailJson{" +
