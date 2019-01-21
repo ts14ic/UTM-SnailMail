@@ -31,7 +31,7 @@ public class Inbox {
         this.prefs = prefs;
 
         this.allMail = new ArrayList<>();
-        this.progress = Progress.VISIBLE;
+        this.progress = Progress.GONE;
         this.content = Content.EMPTY;
     }
 

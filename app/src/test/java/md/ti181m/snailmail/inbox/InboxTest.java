@@ -11,6 +11,7 @@ import md.ti181m.snailmail.network.SnailMailApi;
 import md.ti181m.snailmail.utils.Prefs;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -26,19 +27,22 @@ public class InboxTest {
     @InjectMocks Inbox inbox;
 
     @Test
-    public void testOnCreate_unseenCountIsZero() {
+    public void testInbox_initially_mailIsEmpty() {
+        assertThat(inbox.getVisibleMail()).isEmpty();
+    }
+
+    @Test
+    public void testInbox_initially_unseenCountIsZero() {
         assertThat(inbox.getUnseenCount()).isEqualTo(0);
     }
 
     @Test
-    public void testOnCreate_mailboxNumberSetFromPrefs() {
-        when(prefs.getMailboxId()).thenReturn("103");
-
-        assertThat(inbox.getMailBoxNumber()).isEqualTo("103");
+    public void testInbox_initially_deletedPercentageIsZero() {
+        assertThat(inbox.getDeletedPercentage()).isCloseTo(0, offset(0.1));
     }
 
     @Test
-    public void testOnStart_mailDownloaded() {
+    public void testDownloadMailForDisplay_usesMailBoxNumberFromPrefs() {
         when(prefs.getMailboxId()).thenReturn("53");
 
         inbox.downloadMailForDisplay();
@@ -47,7 +51,13 @@ public class InboxTest {
     }
 
     @Test
-    public void testOnStart_loadingViewsShown() {
+    public void testInbox_initially_stateIsEmpty() {
+        assertThat(inbox.getProgress()).isEqualTo(Inbox.Progress.GONE);
+        assertThat(inbox.getContent()).isEqualTo(Inbox.Content.EMPTY);
+    }
+
+    @Test
+    public void testDownloadMailForDisplay_stateIsLoading() {
         inbox.downloadMailForDisplay();
 
         assertThat(inbox.getProgress()).isEqualTo(Inbox.Progress.VISIBLE);
@@ -55,7 +65,7 @@ public class InboxTest {
     }
 
     @Test
-    public void testOnMarkAsSeenConfirmed_request() {
+    public void testMarkAllAsSeen_usesMailboxNumberFromPrefs() {
         when(prefs.getMailboxId()).thenReturn("53");
 
         inbox.markAllAsSeen();
@@ -64,15 +74,16 @@ public class InboxTest {
     }
 
     @Test
-    public void testOnMarkAsSeenConfirmed_progress() {
+    public void testMarkAllAsSeen_progressShown() {
         inbox.markAllAsSeen();
 
         assertThat(inbox.getProgress()).isEqualTo(Inbox.Progress.VISIBLE);
     }
 
     @Test
-    public void testOnMailDeleteConfirmed_request() {
+    public void testDeleteMail_usesMailId() {
         Mail someMail = someMailWithId(34);
+
         inbox.deleteMail(someMail);
 
         verify(api).deleteMail(/*tag*/any(), eq(34L), any(), any());
@@ -83,7 +94,7 @@ public class InboxTest {
     }
 
     @Test
-    public void testOnMailDeleteConfirmed_progress() {
+    public void testDeleteMail_progressShown() {
         Mail someMail = someMail();
         inbox.deleteMail(someMail);
 
