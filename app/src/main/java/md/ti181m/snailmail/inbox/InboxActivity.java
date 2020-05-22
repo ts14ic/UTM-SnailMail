@@ -27,13 +27,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import md.ti181m.snailmail.R;
-import md.ti181m.snailmail.di.Dependencies;
+import md.ti181m.snailmail.app.BaseActivity;
+import md.ti181m.snailmail.app.di.Dependencies;
 import md.ti181m.snailmail.splash.SplashActivity;
 import md.ti181m.snailmail.utils.Prefs;
 import md.ti181m.snailmail.utils.ToolbarActivity;
 
 public class InboxActivity
-        extends AppCompatActivity
+        extends BaseActivity
         implements ToolbarActivity,
         MailItem.Listener,
         Inbox.Observer {
@@ -64,7 +65,6 @@ public class InboxActivity
     // region lifecycle
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        Dependencies.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(LAYOUT);
         ButterKnife.bind(this);

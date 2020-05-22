@@ -10,10 +10,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import md.ti181m.snailmail.network.model.MailJson;
 
+@Singleton
 public class SnailMailApi extends BaseApi {
 
+    @Inject
     public SnailMailApi(Context context) {
         super(context);
     }
